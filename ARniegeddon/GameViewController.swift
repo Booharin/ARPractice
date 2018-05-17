@@ -36,20 +36,13 @@ class GameViewController: UIViewController {
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    
     if let view = self.view as? ARSKView {
       sceneView = view
-      
-      if let scene = SKScene(fileNamed: "GameScene") {
-        // Set the scale mode to scale to fit the window
-        scene.scaleMode = .aspectFill
-        
-        // Present the scene
-        view.presentScene(scene)
-      }
-      
-      view.ignoresSiblingOrder = true
-      
+      sceneView.delegate = self
+      let scene = GameScene(size: view.bounds.size)
+      scene.scaleMode = .resizeFill
+      scene.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+      view.presentScene(scene)
       view.showsFPS = true
       view.showsNodeCount = true
     }
@@ -82,3 +75,25 @@ class GameViewController: UIViewController {
     return true
   }
 }
+
+extension GameViewController: ARSKViewDelegate {
+  func session(_ session: ARSession, didFailWithError error: Error) {
+    print("Session Failed - probably due to lack of camera access")
+  }
+  
+  func sessionWasInterrupted(_ session: ARSession) {
+    print("Session interrupted")
+  }
+  
+  func sessionInterruptionEnded(_ session: ARSession) {
+    print("Session resumed")
+    if let config = session.configuration {
+      sceneView.session.run(config, options: [.resetTracking, .removeExistingAnchors])
+    }
+  }
+  
+}
+
+
+
+
